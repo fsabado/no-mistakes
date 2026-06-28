@@ -76,7 +76,7 @@ func (s *PRStep) Execute(sctx *pipeline.StepContext) (*pipeline.StepOutcome, err
 			updated = existing
 		}
 		if updated != nil && updated.URL != "" {
-		if err := stateUpdateRunPRURL(sctx, updated.URL); err != nil {
+			if err := stateUpdateRunPRURL(sctx, updated.URL); err != nil {
 				slog.Warn("failed to persist PR URL", "run", sctx.Run.ID, "url", updated.URL, "err", err)
 			}
 			return &pipeline.StepOutcome{PRURL: updated.URL}, nil
