@@ -365,7 +365,7 @@ func updateHeadSHA(ctx context.Context, sctx *pipeline.StepContext) (*pipeline.S
 	}
 	if headSHA != "" && headSHA != sctx.Run.HeadSHA {
 		sctx.Run.HeadSHA = headSHA
-		if err := sctx.DB.UpdateRunHeadSHA(sctx.Run.ID, headSHA); err != nil {
+		if err := stateUpdateRunHeadSHA(sctx, headSHA); err != nil {
 			return nil, err
 		}
 		sctx.Log(fmt.Sprintf("updated head SHA to %s", shortSHA(headSHA)))

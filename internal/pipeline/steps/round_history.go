@@ -19,10 +19,13 @@ import (
 // The section is meant to be appended to an existing prompt and begins with
 // two newlines so it separates cleanly from surrounding context.
 func roundHistoryPromptSection(sctx *pipeline.StepContext) string {
-	if sctx == nil || sctx.DB == nil || sctx.StepResultID == "" {
+	if sctx == nil || sctx.StepResultID == "" {
 		return ""
 	}
-	rounds, err := sctx.DB.GetRoundsByStep(sctx.StepResultID)
+	if sctx.State == nil && sctx.DB == nil {
+		return ""
+	}
+	rounds, err := stateGetRoundsByStep(sctx, sctx.StepResultID)
 	if err != nil || len(rounds) == 0 {
 		return ""
 	}

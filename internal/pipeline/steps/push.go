@@ -88,7 +88,7 @@ func (s *PushStep) Execute(sctx *pipeline.StepContext) (*pipeline.StepOutcome, e
 	}
 	if headSHA != sctx.Run.HeadSHA {
 		sctx.Run.HeadSHA = headSHA
-		if err := sctx.DB.UpdateRunHeadSHA(sctx.Run.ID, headSHA); err != nil {
+		if err := stateUpdateRunHeadSHA(sctx, headSHA); err != nil {
 			return nil, err
 		}
 	}

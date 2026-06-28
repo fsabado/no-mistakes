@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kunchenguid/no-mistakes/internal/db"
 	"github.com/kunchenguid/no-mistakes/internal/git"
 	"github.com/kunchenguid/no-mistakes/internal/intent"
 	"github.com/kunchenguid/no-mistakes/internal/pipeline"
+	"github.com/kunchenguid/no-mistakes/internal/state"
 	"github.com/kunchenguid/no-mistakes/internal/telemetry"
 	"github.com/kunchenguid/no-mistakes/internal/types"
 )
@@ -130,7 +130,7 @@ func (s *IntentStep) Execute(sctx *pipeline.StepContext) (outcome *pipeline.Step
 	score = result.Score
 	outcomeLabel = "matched"
 
-	if dbErr := sctx.DB.UpdateRunIntent(sctx.Run.ID, db.RunIntent{
+	if dbErr := stateUpdateRunIntent(sctx, state.RunIntent{
 		Summary:   result.Summary,
 		Source:    result.AgentName,
 		SessionID: result.SessionID,

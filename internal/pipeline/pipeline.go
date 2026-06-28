@@ -6,6 +6,7 @@ import (
 	"github.com/kunchenguid/no-mistakes/internal/agent"
 	"github.com/kunchenguid/no-mistakes/internal/config"
 	"github.com/kunchenguid/no-mistakes/internal/db"
+	"github.com/kunchenguid/no-mistakes/internal/state"
 	"github.com/kunchenguid/no-mistakes/internal/types"
 )
 
@@ -31,6 +32,11 @@ type StepContext struct {
 	// was trying to accomplish, inferred from local agent transcripts. It's
 	// surfaced in step prompts so agents have context beyond the diff.
 	UserIntent string
+
+	// State is the JSON file-backed store for dagu-driven on-demand runs.
+	// When non-nil, steps use it instead of DB for run state mutations.
+	// DB remains set for the existing push-gate path.
+	State state.Store
 }
 
 // StepOutcome is the result of executing a pipeline step.

@@ -76,7 +76,7 @@ func (s *PRStep) Execute(sctx *pipeline.StepContext) (*pipeline.StepOutcome, err
 			updated = existing
 		}
 		if updated != nil && updated.URL != "" {
-			if err := sctx.DB.UpdateRunPRURL(sctx.Run.ID, updated.URL); err != nil {
+		if err := stateUpdateRunPRURL(sctx, updated.URL); err != nil {
 				slog.Warn("failed to persist PR URL", "run", sctx.Run.ID, "url", updated.URL, "err", err)
 			}
 			return &pipeline.StepOutcome{PRURL: updated.URL}, nil
@@ -93,7 +93,7 @@ func (s *PRStep) Execute(sctx *pipeline.StepContext) (*pipeline.StepOutcome, err
 		return &pipeline.StepOutcome{}, nil
 	}
 	sctx.Log(fmt.Sprintf("created pull request: %s", created.URL))
-	if err := sctx.DB.UpdateRunPRURL(sctx.Run.ID, created.URL); err != nil {
+	if err := stateUpdateRunPRURL(sctx, created.URL); err != nil {
 		slog.Warn("failed to persist PR URL", "run", sctx.Run.ID, "url", created.URL, "err", err)
 	}
 	return &pipeline.StepOutcome{PRURL: created.URL}, nil
@@ -188,7 +188,7 @@ Diff stat:
 // buildPipelineSection queries step results and rounds from the DB and
 // produces the deterministic pipeline, risk, and testing sections.
 func (s *PRStep) buildPipelineSection(sctx *pipeline.StepContext) (string, string, string) {
-	steps, err := sctx.DB.GetStepsByRun(sctx.Run.ID)
+	steps, err := stateGetStepsByRun(sctx)
 	if err != nil {
 		slog.Warn("failed to query step results for pipeline summary", "error", err)
 		return "", "", ""
@@ -196,7 +196,7 @@ func (s *PRStep) buildPipelineSection(sctx *pipeline.StepContext) (string, strin
 
 	rounds := make(map[string][]*db.StepRound, len(steps))
 	for _, sr := range steps {
-		r, err := sctx.DB.GetRoundsByStep(sr.ID)
+		r, err := stateGetRoundsByStep(sctx, sr.ID)
 		if err != nil {
 			slog.Warn("failed to query rounds for step", "step", sr.StepName, "error", err)
 			continue

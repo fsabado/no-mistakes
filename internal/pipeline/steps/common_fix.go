@@ -70,7 +70,7 @@ func commitAgentFixes(sctx *pipeline.StepContext, stepName types.StepName, summa
 		return fmt.Errorf("update local branch ref: %w", err)
 	}
 	sctx.Run.HeadSHA = headSHA
-	if err := sctx.DB.UpdateRunHeadSHA(sctx.Run.ID, headSHA); err != nil {
+	if err := stateUpdateRunHeadSHA(sctx, headSHA); err != nil {
 		return err
 	}
 	sctx.Log(fmt.Sprintf("committed agent fixes: %s", commitMessage))

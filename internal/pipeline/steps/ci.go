@@ -71,7 +71,7 @@ func (s *CIStep) Execute(sctx *pipeline.StepContext) (*pipeline.StepOutcome, err
 	}
 	if prURL == "" {
 		// Try to refresh from DB in case PR step set it
-		run, _ := sctx.DB.GetRun(sctx.Run.ID)
+		run, _ := stateGetRun(sctx)
 		if run != nil && run.PRURL != nil {
 			prURL = *run.PRURL
 			sctx.Run.PRURL = run.PRURL
