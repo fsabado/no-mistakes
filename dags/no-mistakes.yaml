@@ -1,0 +1,80 @@
+# no-mistakes.yaml — Dagu DAG for on-demand pipeline runs.
+#
+# Usage:
+#   dagu start dags/no-mistakes.yaml -- REPO_DIR=/path/to/repo BRANCH=feature/x
+#
+# The prepare step creates an isolated worktree and state.json, then prints
+# the run ID to stdout. Dagu captures it as ${RUN_ID} for all downstream steps.
+#
+# Customization:
+#   - Comment out steps to skip them for a lighter pipeline
+#   - Change depends: to reorder execution
+#   - Add new steps: implement pipeline.Step in Go, add to AllSteps(), add a node here
+
+params:
+  - REPO_DIR: ""    # path to git repo; defaults to CWD if empty
+  - BRANCH: ""      # branch name; defaults to current branch if empty
+
+env:
+  - NM_RUN_DIR: ${DAGU_DAG_RUN_LOG_DIR}
+
+steps:
+  - name: prepare
+    run: no-mistakes prepare --repo "${REPO_DIR}" --branch "${BRANCH}"
+    output: RUN_ID
+
+  - name: intent
+    run: no-mistakes step intent --run-id ${RUN_ID}
+    depends:
+      - prepare
+    continue_on:
+      skipped: true
+      failure: false
+
+  - name: rebase
+    run: no-mistakes step rebase --run-id ${RUN_ID}
+    depends:
+      - intent
+    continue_on:
+      skipped: true
+
+  - name: review
+    run: no-mistakes step review --run-id ${RUN_ID}
+    depends:
+      - rebase
+
+  - name: test
+    run: no-mistakes step test --run-id ${RUN_ID}
+    depends:
+      - review
+
+  - name: document
+    run: no-mistakes step document --run-id ${RUN_ID}
+    depends:
+      - test
+    continue_on:
+      skipped: true
+
+  - name: lint
+    run: no-mistakes step lint --run-id ${RUN_ID}
+    depends:
+      - document
+
+  - name: push
+    run: no-mistakes step push --run-id ${RUN_ID}
+    depends:
+      - lint
+
+  - name: pr
+    run: no-mistakes step pr --run-id ${RUN_ID}
+    depends:
+      - push
+    continue_on:
+      skipped: true
+
+  - name: ci
+    run: no-mistakes step ci --run-id ${RUN_ID}
+    depends:
+      - pr
+    continue_on:
+      skipped: true
